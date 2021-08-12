@@ -1,5 +1,6 @@
 let displayTime = document.querySelector('#currentDay');
 let $container = $('.container');
+let $saveBtn = $('.saveBtn');
 let currentTime = moment().hour();
 let startTime = 9;
 let numBlocks = 9;
@@ -28,10 +29,6 @@ function init(){
 
         tasks = storedTasks;
     }
-
-    console.log(times);
-    console.log(tasks);
-
 }
 
 function generateTimes() {
@@ -70,17 +67,17 @@ function generateTimes() {
         let newSave = $('<button>');
         newSave.addClass('saveBtn');
         newSave.addClass('col-1');
-        newSave.html('<i class="fas fa-save"></i>')
+        newSave.html('<i class="fas fa-save"></i>');
         newSection.append(newSave);
         
         if (hour < currentTime) {
-            newTask.addClass('past')
+            newTask.addClass('past');
         }
         else if (hour > currentTime) {
-            newTask.addClass('future')
+            newTask.addClass('future');
         }
         else {
-            newTask.addClass('present')
+            newTask.addClass('present');
         }
 
         for (let n = 0; n < times.length; n++) {
@@ -89,36 +86,42 @@ function generateTimes() {
             if (checkTime < 9) {
                 checkTime += 12;
             }
-            console.log(checkTime);
-            console.log(i);
             if (checkTime === i) {
                 newTask.val(checkTask);
-                console.log(newTask.val());
             }                 
         }
     }
 }
 
 function saveItem(event) {
-    // convert button we pressed (`event.target`) to a jQuery DOM object
     event.preventDefault();
     console.log(event.target);
     var btnClicked = $(event.target);
     
-    let taskTime = btnClicked.siblings().eq(0).text();
+    if (btnClicked.hasClass('saveBtn')) {
+        let taskTime = btnClicked.siblings().eq(0).text();
+        console.log(taskTime);    
+        let timeToStore = taskTime.substr(0, taskTime.length - 2);
+        let currentTask = btnClicked.siblings().eq(1).val();
+        console.log(currentTask);
 
-    console.log(taskTime);
-    let timeToStore = taskTime.substr(0, taskTime.length - 2);
+        times.push(timeToStore);
+        tasks.push(currentTask);
+    }
+    else {
+        let taskTime = btnClicked.parent().siblings().eq(0).text();
+        console.log(taskTime);    
+        let timeToStore = taskTime.substr(0, taskTime.length - 2);
+        let currentTask = btnClicked.parent().siblings().eq(1).val();
+        console.log(currentTask);
 
-    
-    let currentTask = btnClicked.siblings().eq(1).val();
-    
-    times.push(timeToStore);
-    tasks.push(currentTask);
+        times.push(timeToStore);
+        tasks.push(currentTask);
+    }
     
     localStorage.setItem("times", JSON.stringify(times));
     localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
 $container.on('click', '.saveBtn', saveItem);
- 
+$saveBtn.on('click', 'i', saveItem);
