@@ -1,15 +1,38 @@
 let displayTime = document.querySelector('#currentDay');
 let $container = $('.container');
-let currentTime = 12;
+let currentTime = moment().hour();
 let startTime = 9;
 let numBlocks = 9;
+let times = [];
+let tasks = [];
 
 var timeInterval = setInterval(function () {
         
     displayTime.textContent = moment().format("dddd, MMMM Do");
 }, 1000);
 
+init();
 generateTimes();
+
+function init(){
+
+    let storedTimes = JSON.parse(localStorage.getItem("times"));
+    let storedTasks = JSON.parse(localStorage.getItem("tasks"));
+
+    if(storedTimes !== null) {
+
+        times = storedTimes;
+    }
+
+    if (storedTasks !== null) {
+
+        tasks = storedTasks;
+    }
+
+    console.log(times);
+    console.log(tasks);
+
+}
 
 function generateTimes() {
     for (let i = startTime; i < (startTime + numBlocks); i++) {
@@ -26,6 +49,7 @@ function generateTimes() {
         newHour.addClass('col-1');
         newHour.addClass('text-center');       
         newHour.addClass('mb-0');
+        newHour.addClass('pt-4');
         newSection.append(newHour);
 
         if (hour < 12) {
@@ -48,8 +72,6 @@ function generateTimes() {
         newSave.addClass('col-1');
         newSave.html('<i class="fas fa-save"></i>')
         newSection.append(newSave);
-
-
         
         if (hour < currentTime) {
             newTask.addClass('past')
@@ -60,16 +82,43 @@ function generateTimes() {
         else {
             newTask.addClass('present')
         }
+
+        for (let n = 0; n < times.length; n++) {
+            let checkTime = parseInt(times[n]);
+            let checkTask = tasks[n];
+            if (checkTime < 9) {
+                checkTime += 12;
+            }
+            console.log(checkTime);
+            console.log(i);
+            if (checkTime === i) {
+                newTask.val(checkTask);
+                console.log(newTask.val());
+            }                 
+        }
     }
 }
 
-function handleSaveItem(event) {
+function saveItem(event) {
     // convert button we pressed (`event.target`) to a jQuery DOM object
+    event.preventDefault();
+    console.log(event.target);
     var btnClicked = $(event.target);
-  
-    // get the parent `<li>` element from the button we pressed and remove it
-    btnClicked.parent('section').remove();
+    
+    let taskTime = btnClicked.siblings().eq(0).text();
+
+    console.log(taskTime);
+    let timeToStore = taskTime.substr(0, taskTime.length - 2);
+
+    
+    let currentTask = btnClicked.siblings().eq(1).val();
+    
+    times.push(timeToStore);
+    tasks.push(currentTask);
+    
+    localStorage.setItem("times", JSON.stringify(times));
+    localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
-shoppingListEl.on('click', '.saveBtn', handleSaveItem);
+$container.on('click', '.saveBtn', saveItem);
  
