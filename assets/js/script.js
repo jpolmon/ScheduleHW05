@@ -4,8 +4,33 @@ let $saveBtn = $('.saveBtn');
 let currentTime = moment().hour();
 let startTime = 9;
 let numBlocks = 9;
-let times = [];
-let tasks = [];
+let initValues = [
+    {hour: 9, 
+    text: ""}, 
+    
+    {hour: 10, 
+    text: ""},
+
+    {hour: 11, 
+    text: ""}, 
+    
+    {hour: 12, 
+    text: ""}, 
+
+    {hour: 13, 
+    text: ""},
+    
+    {hour: 14, 
+    text: ""}, 
+
+    {hour: 15, 
+    text: ""}, 
+
+    {hour: 16, 
+    text: ""}, 
+
+    {hour: 17, 
+    text: ""}];
 
 var timeInterval = setInterval(function () {
         
@@ -20,14 +45,14 @@ function init(){
     let storedTimes = JSON.parse(localStorage.getItem("times"));
     let storedTasks = JSON.parse(localStorage.getItem("tasks"));
 
-    if(storedTimes !== null) {
+    if(storedTimes !== null && storedTasks !== null) {
 
-        times = storedTimes;
-    }
-
-    if (storedTasks !== null) {
-
-        tasks = storedTasks;
+        for (let i = 0; i < storedTimes.length; i++) {
+            
+            if (storedTimes[i] == initValues[i].hour) {
+                initValues[i].text = storedTasks[i];
+            }                          
+        }
     }
 }
 
@@ -35,7 +60,7 @@ function generateTimes() {
     for (let i = startTime; i < (startTime + numBlocks); i++) {
         let hour = i;
         let newId = "hour"+hour;
-        
+
         let newSection = $('<section>');
         newSection.addClass('row');
         newSection.attr('id', newId);
@@ -63,13 +88,7 @@ function generateTimes() {
         newTask.addClass('textarea');
         newTask.addClass('col-10');
         newSection.append(newTask);
-
-        let newSave = $('<button>');
-        newSave.addClass('saveBtn');
-        newSave.addClass('col-1');
-        newSave.html('<i class="fas fa-save"></i>');
-        newSection.append(newSave);
-        
+       
         if (hour < currentTime) {
             newTask.addClass('past');
         }
@@ -80,47 +99,62 @@ function generateTimes() {
             newTask.addClass('present');
         }
 
-        for (let n = 0; n < times.length; n++) {
-            let checkTime = parseInt(times[n]);
-            let checkTask = tasks[n];
-            if (checkTime < 9) {
-                checkTime += 12;
-            }
-            if (checkTime === i) {
-                newTask.val(checkTask);
-            }                 
-        }
+        newTask.val(initValues[i-startTime].text);  
+        
+        let newSave = $('<button>');
+        newSave.addClass('saveBtn');
+        newSave.addClass('col-1');
+        newSave.html('<i class="fas fa-save"></i>');
+        newSection.append(newSave);
     }
 }
 
 function saveItem(event) {
     event.preventDefault();
-    console.log(event.target);
     var btnClicked = $(event.target);
-    
-    if (btnClicked.hasClass('saveBtn')) {
-        let taskTime = btnClicked.siblings().eq(0).text();
-        console.log(taskTime);    
-        let timeToStore = taskTime.substr(0, taskTime.length - 2);
-        let currentTask = btnClicked.siblings().eq(1).val();
-        console.log(currentTask);
 
-        times.push(timeToStore);
-        tasks.push(currentTask);
+    if (btnClicked.hasClass('saveBtn')) {
+        let taskTime = btnClicked.siblings().eq(0).text();  
+        let timeToStore = parseInt(taskTime.substr(0, taskTime.length - 2));
+        if (timeToStore < 9) {
+            timeToStore += 12;
+        }
+        let currentTask = btnClicked.siblings().eq(1).val();
+        
+        for (let i = 0; i < initValues.length; i++) {
+            if (timeToStore == initValues[i].hour) {
+                initValues[i].text = currentTask;
+            }            
+        }
     }
     else {
-        let taskTime = btnClicked.parent().siblings().eq(0).text();
-        console.log(taskTime);    
-        let timeToStore = taskTime.substr(0, taskTime.length - 2);
+        let taskTime = btnClicked.parent().siblings().eq(0).text();  
+        let timeToStore = parseInt(taskTime.substr(0, taskTime.length - 2));
+        if (timeToStore < 9) {
+            timeToStore += 12;
+        }
         let currentTask = btnClicked.parent().siblings().eq(1).val();
-        console.log(currentTask);
 
-        times.push(timeToStore);
-        tasks.push(currentTask);
+        for (let i = 0; i < initValues.length; i++) {
+            if (timeToStore == initValues[i].hour) {
+                initValues[i].text = currentTask;
+            }            
+        }
     }
     
-    localStorage.setItem("times", JSON.stringify(times));
-    localStorage.setItem("tasks", JSON.stringify(tasks));
+    let saveTimes = [];
+    let saveTasks = [];
+
+    for (let i = 0; i < initValues.length; i++) {
+        tempTime = initValues[i].hour;
+        tempTask = initValues[i].text;
+
+        saveTimes.push(tempTime);
+        saveTasks.push(tempTask);        
+    }
+
+    localStorage.setItem("times", JSON.stringify(saveTimes));
+    localStorage.setItem("tasks", JSON.stringify(saveTasks));
 }
 
 $container.on('click', '.saveBtn', saveItem);
